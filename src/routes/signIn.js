@@ -8,13 +8,25 @@ const bcrypt = require('bcrypt');
 
 const { Sequelize } = require('sequelize');
 
-const SALT_ROUNDS = 10;
+const invalidateOutdatedRefreshTokens = async (transaction, req, res) => {
+
+    //TODO: More optimized method of deleting outdated refresh tokens. 
+    await RefreshToken.destroy({
+        where: {
+            expires: {
+                [Sequelize.Op.lt]: new Date()
+            }
+        }
+    }, { transaction });
+
+}
 
 const validateRefreshToken = async (transaction, refreshTokenValue) => {
 
     const result = await RefreshToken.findOne({
         where: {
             value: refreshTokenValue
+
         }
     }, { transaction });
 
@@ -32,9 +44,9 @@ const generateRefreshToken = (transaction) => {
 }
 
 
- const generateJwt = (user) => {
+const generateJwt = (user) => {
 
-    return new SignJWT({ userId: user.id, given_name: user.firstName, family_name: user.lastName })
+    return new SignJWT({ userId: user.id, nickname: user.nickname })
         .setProtectedHeader({ alg: 'RS256' })
         .setIssuedAt()
         .setIssuer(process.env.JWT_ISSUER)
@@ -132,7 +144,7 @@ const signInOauth = async (req, res, authenticationMethod, publicKey, jwtIssuer,
 
         const user = await getUser(transaction, payload.email, authenticationMethod);
 
-        if(user === undefined || user === null) {
+        if (user === undefined || user === null) {
             res.status(400).send('Invalid JWT: user not found.');
             return;
         }
@@ -146,9 +158,7 @@ const signInOauth = async (req, res, authenticationMethod, publicKey, jwtIssuer,
 
         res.status(200).json({
             accessToken,
-            refreshToken: refreshToken.value,
-            firstName: user.firstName,
-            lastName: user.lastName
+            refreshToken: refreshToken.value
         });
 
     } catch (err) {
@@ -211,9 +221,7 @@ const signInCredentials = async (req, res) => {
 
         res.status(200).json({
             accessToken,
-            refreshToken: refreshToken.value,
-            firstName: user.firstName,
-            lastName: user.lastName
+            refreshToken: refreshToken.value
         });
 
     } catch (err) {
@@ -236,6 +244,7 @@ const refresh = async (req, res) => {
     const transaction = await sequelize.transaction();
 
     validationSchema.validate(req.body)
+        .then(() => invalidateOutdatedRefreshTokens(transaction, req, res))
         .then(() => validateRefreshToken(transaction, req.body.refreshToken))
         .then(() => updateTokens(transaction, req.body.refreshToken, req, res))
         .catch((err) => handleError(err, req, res));

@@ -78,7 +78,7 @@ const userAlreadyExists = async (email, authenticationMethod) => {
  * @param {String} authenticationMethod Enum as defined in User.authenticationMethod
  * @param {String} [password=null] 
  */
-const createNewUser = async ({req, res, email, authenticationMethod, password, firstName, lastName}) => {
+const createNewUser = async ({req, res, email, authenticationMethod, password, nickname}) => {
 
     try {
 
@@ -95,8 +95,7 @@ const createNewUser = async ({req, res, email, authenticationMethod, password, f
             email: email.toLowerCase(),
             passwordHash: passwordHash,
             authenticationMethod: authenticationMethod,
-            firstName: firstName,
-            lastName: lastName
+            nickname: nickname
         }, { transaction });
 
         const refreshToken = await generateRefreshToken(transaction);
@@ -148,8 +147,7 @@ const signUpApple = async (req, res) => {
             res,
             email: payload.email,
             authenticationMethod: 'APPLE',
-            firstName: payload.given_name,
-            lastName: payload.family_name,
+            nickname: payload.given_name
         });
 
     } catch (err) {
@@ -190,8 +188,7 @@ const signUpGoogle = async (req, res) => {
             res,
             email: payload.email,
             authenticationMethod: 'GOOGLE',
-            firstName: payload.given_name,
-            lastName: payload.family_name,
+            nickname: payload.given_name
         });
 
     } catch (err) {
@@ -210,8 +207,7 @@ const signUpCredentials = (req, res) => {
         email: yup.string().required().email(),
         password: yup.string().required(),
         passwordConfirm: yup.string().required().oneOf([yup.ref('password')]),
-        firstName: yup.string().required(),
-        lastName: yup.string().required()
+        nickname: yup.string().required()
     });
 
     schema.validate(req.body)
@@ -227,13 +223,12 @@ const signUpCredentials = (req, res) => {
                 email: req.body.email,
                 authenticationMethod: 'CREDENTIALS',
                 password: req.body.password,
-                firstName: req.body.firstName,
-                lastName: req.body.lastName
+                nickname: req.body.nickname
             });
         })
         .catch((err) => {
             console.error(err);
-            const errorText = 'Invalid request:';
+            let errorText = 'Invalid request:';
             err.errors.forEach((error) => errorText += (error + '\n'));
             res.status(400).send(errorText);
         })

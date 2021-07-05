@@ -46,8 +46,7 @@ MYSQL_DATABASE - Self explanatory
 
 JWTs issued by this auth server contain the following properties:
 
-- given_name (first name)
-- family_name (last name)
+- nickname
 - userId
 
 ## API
@@ -84,8 +83,7 @@ In the event of an error, the auth server will return a plain text (text/html) e
     "email":"cow@cow.jp",
     "password":"password",
     "passwordConfirm":"password",
-    "firstName":"Melvin",
-    "lastName":"Friedman"
+    "nickname":"Melvin Friedman"
 }
 ```
 

@@ -1,14 +1,13 @@
 const axios = require('axios');
 
-const EMAIL = 'cow25@cow.jp';
+const EMAIL = 'cow28@cow.jp';
 const PASSOWRD = 'password'
 const WEB_ROOT = 'https://auth.timelapseme.cameronwhite.io'
 
 const GOOGLE_JWT = '';
 const APPLE_JWT = '';
 
-const FIRST_NAME = 'Cameron';
-const LAST_NAME = 'White';
+const NICKNAME = 'Cameron White';
 
 let currentRefreshToken = '';
 
@@ -18,8 +17,7 @@ test('Creating an account using credentials', (done) => {
             email: EMAIL,
             password: PASSOWRD,
             passwordConfirm: PASSOWRD,
-            firstName: FIRST_NAME,
-            lastName: LAST_NAME
+            nickname: NICKNAME
         })
             .then((res) => {
                 expect(res.data).toEqual(

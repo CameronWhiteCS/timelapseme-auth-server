@@ -30,11 +30,7 @@ const User = sequelize.define('User', {
         allowNull: false
 
     },
-    firstName: {
-        type: DataTypes.STRING(128),
-        allowNull: false
-    },
-    lastName: {
+    nickname: {
         type: DataTypes.STRING(128),
         allowNull: false
     }
